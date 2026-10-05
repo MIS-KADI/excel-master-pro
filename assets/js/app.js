@@ -1296,9 +1296,9 @@ const App = {
                 <div>તમારો તમામ ડેટા સુરક્ષિત રીતે ગૂગલ ફાયરબેસ ક્લાઉડ સાથે જોડાયેલો છે.</div>
               </div>
             </div>
-            <button class="btn btn-secondary btn-sm font-semibold shrink-0" onclick="FirebaseAuthManager.openConfigModal()">
-              ⚙️ Firebase સેટિંગ્સ
-            </button>
+            <span class="text-xs font-bold text-green-600 bg-green-500/10 px-3 py-1 rounded-full border border-green-500/20 shrink-0">
+              કનેક્ટેડ ✓
+            </span>
           </div>
         </div>
       `;
@@ -1422,10 +1422,7 @@ const App = {
         <!-- Security Badge -->
         <div class="text-center text-xs text-muted mt-6 flex items-center justify-center gap-2">
           <span>🔒 256-bit SSL</span> •
-          <span>Google Firebase Auth</span> •
-          <button class="text-accent underline font-semibold cursor-pointer" onclick="FirebaseAuthManager.openConfigModal()">
-            Firebase Settings
-          </button>
+          <span>Google Firebase Auth (excel-master-pro-4c1a1)</span>
         </div>
       </div>
     `;

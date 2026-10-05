@@ -11,8 +11,8 @@ const FirebaseAuthManager = {
   currentUser: null,
   activeMode: 'signin', // 'signin' or 'signup'
   
-  // Official Firebase Project Credentials for excel-master-pro-4c1a1
-  defaultConfig: {
+  // Official Hardcoded Firebase Project Credentials for excel-master-pro-4c1a1
+  config: {
     apiKey: "AIzaSyBzk4WKDSiUNvuFtOH_XrUjW_DIvKVjft0",
     authDomain: "excel-master-pro-4c1a1.firebaseapp.com",
     projectId: "excel-master-pro-4c1a1",
@@ -20,9 +20,6 @@ const FirebaseAuthManager = {
     messagingSenderId: "30653899749",
     appId: "1:30653899749:web:ddf8a1fbedfba3bd33450c"
   },
-
-  // Active configuration (prefers stored, fallbacks to official defaultConfig)
-  config: null,
 
   isLoggedIn() {
     if (this.currentUser && (this.currentUser.uid || this.currentUser.email)) {
@@ -52,43 +49,21 @@ const FirebaseAuthManager = {
   },
 
   init() {
-    this.resolveConfig();
+    // Reset test session once on upgrade so user sees the login page first
+    if (!localStorage.getItem('excel_master_clean_gate_v6')) {
+      localStorage.removeItem('excel_master_user_profile');
+      localStorage.removeItem('excel_master_mock_user');
+      localStorage.setItem('excel_master_clean_gate_v6', 'true');
+    }
+
     this.isLoggedIn();
     this.setupFirebase();
     this.renderHeaderAuthButton();
   },
 
-  resolveConfig() {
-    let stored = null;
-    try {
-      stored = JSON.parse(localStorage.getItem('excel_master_firebase_config') || 'null');
-    } catch (e) {
-      stored = null;
-    }
-
-    if (stored && stored.apiKey && stored.apiKey !== '') {
-      this.config = stored;
-    } else {
-      this.config = { ...this.defaultConfig };
-      localStorage.setItem('excel_master_firebase_config', JSON.stringify(this.config));
-    }
-  },
-
   setupFirebase() {
     if (typeof firebase === 'undefined') {
       console.warn("Firebase SDK script not loaded yet.");
-      return;
-    }
-
-    if (!this.config || !this.config.apiKey) {
-      const savedUser = localStorage.getItem('excel_master_mock_user');
-      if (savedUser) {
-        try {
-          this.currentUser = JSON.parse(savedUser);
-        } catch (e) {
-          this.currentUser = null;
-        }
-      }
       return;
     }
 
@@ -101,7 +76,7 @@ const FirebaseAuthManager = {
         try {
           this.db = firebase.firestore();
         } catch(fsErr) {
-          console.warn("Firestore init warning:", fsErr);
+          console.warn("Firestore init notice:", fsErr);
         }
       }
 
@@ -117,15 +92,12 @@ const FirebaseAuthManager = {
           };
           localStorage.setItem('excel_master_user_profile', JSON.stringify(profileData));
           
-          // Pre-fill certificate candidate name with verified Google Name
           if (user.displayName) {
             const certInput = document.getElementById('certCandidateName');
             if (certInput) certInput.value = user.displayName;
           }
 
-          // Fetch & restore cloud progress from Firestore if available
           this.restoreCloudProgress(user.uid);
-
         } else {
           const mockUser = localStorage.getItem('excel_master_mock_user');
           if (mockUser) {
@@ -135,6 +107,7 @@ const FirebaseAuthManager = {
             localStorage.removeItem('excel_master_user_profile');
           }
         }
+
         this.renderHeaderAuthButton();
         if (typeof App !== 'undefined') {
           App.checkAuthGate();
@@ -146,6 +119,7 @@ const FirebaseAuthManager = {
         if (result && result.user) {
           if (typeof App !== 'undefined') {
             App.showToast("સફળતાપૂર્વક સાઇન ઇન: " + (result.user.displayName || result.user.email));
+            App.checkAuthGate();
           }
         }
       }).catch((error) => {
@@ -181,264 +155,11 @@ const FirebaseAuthManager = {
       `;
     } else {
       container.innerHTML = `
-        <button id="authModalBtn" class="btn btn-secondary btn-sm flex items-center gap-1.5 font-bold" onclick="App.switchTab('auth')">
+        <button id="authModalBtn" class="btn btn-secondary btn-sm flex items-center gap-1.5 font-bold" onclick="App.checkAuthGate()">
           <span>👤</span>
           <span data-i18n="signInBtn">${typeof I18N !== 'undefined' ? I18N.t('signInBtn') : 'સાઇન ઇન'}</span>
         </button>
       `;
-    }
-  },
-
-  openAuthModal() {
-    let modal = document.getElementById('authModal');
-    if (!modal) {
-      modal = document.createElement('div');
-      modal.id = 'authModal';
-      modal.className = 'modal-backdrop';
-      modal.onclick = (e) => { if (e.target === modal) this.closeAuthModal(); };
-      document.body.appendChild(modal);
-    }
-
-    const isSignUp = this.activeMode === 'signup';
-
-    modal.innerHTML = `
-      <div class="modal-content auth-modal-box max-w-md w-full bg-card p-6 md:p-8 rounded-2xl border border-border shadow-2xl relative">
-        <button class="modal-close-btn" onclick="FirebaseAuthManager.closeAuthModal()" aria-label="Close">✕</button>
-
-        <div class="text-center mb-6">
-          <div class="w-12 h-12 rounded-2xl bg-accent/10 text-accent flex items-center justify-center text-2xl mx-auto mb-3">
-            🔐
-          </div>
-          <h3 class="text-xl font-extrabold text-main mb-1">
-            ${isSignUp ? (typeof I18N !== 'undefined' ? I18N.t('authSubmitSignUp') : 'નવું ખાતું બનાવો') : (typeof I18N !== 'undefined' ? I18N.t('authModalTitle') : 'એક્સેલ માસ્ટરમાં સાઇન ઇન કરો')}
-          </h3>
-          <p class="text-xs text-muted">
-            ${typeof I18N !== 'undefined' ? I18N.t('authModalSubtitle') : 'કોર્સ પ્રગતિ, પરીક્ષા સ્કોર અને સર્ટિફિકેટ ક્લાઉડમાં સુરક્ષિત સેવ કરો.'}
-          </p>
-          <div class="mt-2 text-[11px] font-mono inline-block px-2.5 py-0.5 rounded-full bg-accent/10 text-accent font-semibold border border-accent/20">
-            Firebase: excel-master-pro-4c1a1 ✓
-          </div>
-        </div>
-
-        <!-- Google 1-Click Sign-In Button -->
-        <button class="btn-google-auth w-full py-3 px-4 rounded-xl border border-border bg-page hover:bg-card-subtle flex items-center justify-center gap-3 font-bold text-sm mb-4 transition-all shadow-sm hover:border-accent"
-                onclick="FirebaseAuthManager.signInWithGoogle()">
-          <svg class="w-5 h-5" viewBox="0 0 24 24">
-            <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-            <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-            <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
-            <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
-          </svg>
-          <span>${typeof I18N !== 'undefined' ? I18N.t('googleSignIn') : 'Google વડે સાઇન ઇન કરો'}</span>
-        </button>
-
-        <div class="flex items-center gap-3 my-4">
-          <div class="h-px bg-border flex-1"></div>
-          <span class="text-[11px] uppercase font-bold text-muted">${typeof I18N !== 'undefined' ? I18N.t('orEmailLabel') : 'અથવા ઈમેલ વડે'}</span>
-          <div class="h-px bg-border flex-1"></div>
-        </div>
-
-        <!-- Email & Password Form -->
-        <form onsubmit="event.preventDefault(); FirebaseAuthManager.handleEmailAuth();" class="space-y-3 mb-4">
-          ${isSignUp ? `
-            <div>
-              <label class="block text-xs font-bold text-muted mb-1">પૂરું નામ (Full Name)</label>
-              <input type="text" id="authDisplayNameInput" class="form-control w-full p-2.5 rounded-lg border border-border bg-page text-main text-sm" placeholder="તમારું પૂરું નામ..." required />
-            </div>
-          ` : ''}
-
-          <div>
-            <label class="block text-xs font-bold text-muted mb-1">ઈમેલ (Email)</label>
-            <input type="email" id="authEmailInput" class="form-control w-full p-2.5 rounded-lg border border-border bg-page text-main text-sm" placeholder="તમારું ઈમેલ એડ્રેસ..." required />
-          </div>
-
-          <div>
-            <label class="block text-xs font-bold text-muted mb-1">પાસવર્ડ (Password)</label>
-            <input type="password" id="authPasswordInput" class="form-control w-full p-2.5 rounded-lg border border-border bg-page text-main text-sm" placeholder="ઓછામાં ઓછા ૬ અક્ષર..." required minlength="6" />
-          </div>
-
-          <button type="submit" class="btn btn-primary w-full py-2.5 font-bold shadow-md rounded-lg">
-            ${isSignUp ? (typeof I18N !== 'undefined' ? I18N.t('authSubmitSignUp') : 'નવું ખાતું બનાવો') : (typeof I18N !== 'undefined' ? I18N.t('authSubmitSignIn') : 'સાઇન ઇન કરો')}
-          </button>
-        </form>
-
-        <!-- Toggle between Sign In & Sign Up -->
-        <div class="text-center text-xs text-muted mb-4">
-          ${isSignUp ? `
-            <span>${typeof I18N !== 'undefined' ? I18N.t('alreadyAccountText') : 'પહેલેથી ખાતું છે?'}</span>
-            <button class="text-accent font-bold underline ml-1" onclick="FirebaseAuthManager.toggleAuthMode('signin')">
-              સાઇન ઇન
-            </button>
-          ` : `
-            <span>${typeof I18N !== 'undefined' ? I18N.t('noAccountText') : 'ખાતું નથી?'}</span>
-            <button class="text-accent font-bold underline ml-1" onclick="FirebaseAuthManager.toggleAuthMode('signup')">
-              નવું ખાતું બનાવો
-            </button>
-          `}
-        </div>
-
-        <!-- Firebase Config Settings & Demo Toggle -->
-        <div class="pt-3 border-t border-border flex items-center justify-between text-xs">
-          <button class="text-muted hover:text-accent flex items-center gap-1 font-semibold" 
-                  onclick="FirebaseAuthManager.openConfigModal()">
-            ⚙️ Firebase સેટિંગ્સ
-          </button>
-
-          <!-- Guest Demo Login -->
-          <button class="text-accent hover:underline font-bold" 
-                  onclick="FirebaseAuthManager.signInAsDemoUser()">
-            ⚡ ગેસ્ટ ડેમો લોગિન
-          </button>
-        </div>
-      </div>
-    `;
-
-    modal.classList.add('open');
-  },
-
-  closeAuthModal() {
-    const modal = document.getElementById('authModal');
-    if (modal) modal.classList.remove('open');
-  },
-
-  toggleAuthMode(mode) {
-    this.activeMode = mode;
-    this.openAuthModal();
-  },
-
-  // Dedicated In-App Firebase Project Configuration Modal
-  openConfigModal() {
-    this.closeAuthModal();
-
-    let cfgModal = document.getElementById('firebaseConfigModal');
-    if (!cfgModal) {
-      cfgModal = document.createElement('div');
-      cfgModal.id = 'firebaseConfigModal';
-      cfgModal.className = 'modal-backdrop';
-      cfgModal.onclick = (e) => { if (e.target === cfgModal) this.closeConfigModal(); };
-      document.body.appendChild(cfgModal);
-    }
-
-    const currentApiKey = this.config?.apiKey || this.defaultConfig.apiKey;
-    const currentAppId = this.config?.appId || this.defaultConfig.appId;
-    const currentJson = this.config ? JSON.stringify(this.config, null, 2) : JSON.stringify(this.defaultConfig, null, 2);
-
-    cfgModal.innerHTML = `
-      <div class="modal-content max-w-lg w-full bg-card p-6 md:p-7 rounded-2xl border border-border shadow-2xl relative">
-        <button class="modal-close-btn" onclick="FirebaseAuthManager.closeConfigModal()" aria-label="Close">✕</button>
-
-        <div class="flex items-center gap-3 mb-4">
-          <div class="w-10 h-10 rounded-xl bg-accent/10 text-accent flex items-center justify-center text-xl font-bold">
-            🔥
-          </div>
-          <div>
-            <h3 class="text-lg font-extrabold text-main">Firebase કનેક્શન સ્ટેટસ</h3>
-            <p class="text-xs text-muted">પ્રોજેક્ટ: <span class="font-mono text-accent font-bold">excel-master-pro-4c1a1</span> (કનેક્ટેડ ✓)</p>
-          </div>
-        </div>
-
-        <div class="bg-card-subtle p-3 rounded-xl border border-border text-xs mb-4 space-y-1.5">
-          <div class="font-bold text-main flex items-center gap-1.5">
-            <span>✅</span> પ્રોજેક્ટ લિંક થયેલ છે:
-          </div>
-          <div class="text-muted leading-relaxed">
-            - <b>API Key</b>: <code class="px-1 py-0.5 bg-page rounded font-mono text-accent">AIzaSyBzk4WK...</code><br/>
-            - <b>Auth Domain</b>: <code class="px-1 py-0.5 bg-page rounded font-mono">excel-master-pro-4c1a1.firebaseapp.com</code><br/>
-            - <b>App ID</b>: <code class="px-1 py-0.5 bg-page rounded font-mono">1:30653899749:web:ddf8a1fbedfba3bd33450c</code>
-          </div>
-          <div class="pt-1 text-[11px] text-muted">
-            ⚠️ જો Google સાઇન ઇન કરતી વખતે Unauthorized Domain એરર આવે તો Firebase Console > Authentication > Settings > Authorized domains માં <b class="text-accent">${window.location.hostname}</b> ઉમેરેલું હોવું જોઈએ.
-          </div>
-        </div>
-
-        <form onsubmit="event.preventDefault(); FirebaseAuthManager.saveConfigFromForm();" class="space-y-3 mb-4">
-          <div>
-            <label class="block text-xs font-bold text-muted mb-1">
-              Web API Key
-            </label>
-            <input type="text" id="cfgApiKeyInput" class="form-control w-full p-2.5 rounded-lg border border-border bg-page text-main text-xs font-mono" 
-                   placeholder="AIzaSy..." value="${currentApiKey}" required />
-          </div>
-
-          <div>
-            <label class="block text-xs font-bold text-muted mb-1">
-              Web App ID
-            </label>
-            <input type="text" id="cfgAppIdInput" class="form-control w-full p-2.5 rounded-lg border border-border bg-page text-main text-xs font-mono" 
-                   placeholder="1:123456789:web:abcdef..." value="${currentAppId}" />
-          </div>
-
-          <details class="text-xs text-muted">
-            <summary class="cursor-pointer font-bold hover:text-main mb-2">સંપૂર્ણ Config JSON જુઓ / બદલો ▼</summary>
-            <textarea id="cfgJsonInput" rows="5" class="form-control w-full p-2.5 rounded-lg border border-border bg-page text-main text-[11px] font-mono">${currentJson}</textarea>
-          </details>
-
-          <div class="flex items-center gap-2 pt-2">
-            <button type="submit" class="btn btn-primary flex-1 py-2.5 font-bold shadow-md rounded-lg text-sm">
-              💾 કન્ફિગ સેવ કરો
-            </button>
-            <button type="button" class="btn btn-secondary py-2.5 px-4 font-bold rounded-lg text-sm" onclick="FirebaseAuthManager.resetToDefaults()">
-              🔄 ડિફોલ્ટ રીસેટ
-            </button>
-          </div>
-        </form>
-      </div>
-    `;
-
-    cfgModal.classList.add('open');
-  },
-
-  closeConfigModal() {
-    const modal = document.getElementById('firebaseConfigModal');
-    if (modal) modal.classList.remove('open');
-  },
-
-  resetToDefaults() {
-    this.config = { ...this.defaultConfig };
-    localStorage.setItem('excel_master_firebase_config', JSON.stringify(this.config));
-    this.setupFirebase();
-    this.closeConfigModal();
-    if (typeof App !== 'undefined') {
-      App.showToast("ડિફોલ્ટ Firebase કન્ફિગ રીસ્ટોર થઈ ગયું!");
-    }
-  },
-
-  saveConfigFromForm() {
-    const jsonStr = document.getElementById('cfgJsonInput')?.value?.trim();
-    let newConfig = null;
-
-    if (jsonStr && jsonStr.startsWith('{')) {
-      try {
-        newConfig = JSON.parse(jsonStr);
-      } catch (e) {
-        alert("JSON ફોર્મેટ સાચું નથી. કૃપા કરીને યોગ્ય JSON દાખલ કરો.");
-        return;
-      }
-    } else {
-      const apiKey = document.getElementById('cfgApiKeyInput')?.value?.trim();
-      const appId = document.getElementById('cfgAppIdInput')?.value?.trim();
-      if (!apiKey) {
-        alert("કૃપા કરીને Web API Key દાખલ કરો.");
-        return;
-      }
-
-      newConfig = {
-        apiKey: apiKey,
-        authDomain: this.defaultConfig.authDomain,
-        projectId: this.defaultConfig.projectId,
-        storageBucket: this.defaultConfig.storageBucket,
-        messagingSenderId: this.defaultConfig.messagingSenderId,
-        appId: appId || this.defaultConfig.appId
-      };
-    }
-
-    this.config = newConfig;
-    localStorage.setItem('excel_master_firebase_config', JSON.stringify(newConfig));
-    this.setupFirebase();
-    this.closeConfigModal();
-
-    if (typeof App !== 'undefined') {
-      App.showToast("Firebase Config સફળતાપૂર્વક સેવ થઈ ગયું!");
     }
   },
 
@@ -448,7 +169,7 @@ const FirebaseAuthManager = {
     }
 
     if (!this.auth) {
-      alert("Firebase શરૂ થઈ શક્યું નથી. કૃપા કરીને થોડી સેકન્ડ બાદ પ્રયત્ન કરો.");
+      alert("Firebase શરૂ થઈ શક્યું નથી. કૃપા કરીને થોડી સેકન્ડ બાદ ફરી પ્રયત્ન કરો.");
       return;
     }
 
@@ -462,11 +183,9 @@ const FirebaseAuthManager = {
         App.showToast("સફળતાપૂર્વક સાઇન ઇન: " + userName);
         App.checkAuthGate();
       }
-      this.closeAuthModal();
     } catch (err) {
       console.error("Google sign in error:", err);
       if (err.code === 'auth/popup-blocked' || err.code === 'auth/cancelled-popup-request') {
-        // Fallback to redirect
         try {
           const provider = new firebase.auth.GoogleAuthProvider();
           await this.auth.signInWithRedirect(provider);
@@ -497,14 +216,15 @@ const FirebaseAuthManager = {
         }
         if (typeof App !== 'undefined') {
           App.showToast("નવું ખાતું સફળતાપૂર્વક બની ગયું!");
+          App.checkAuthGate();
         }
       } else {
         await this.auth.signInWithEmailAndPassword(email, password);
         if (typeof App !== 'undefined') {
           App.showToast("સફળતાપૂર્વક સાઇન ઇન થઈ ગયું!");
+          App.checkAuthGate();
         }
       }
-      this.closeAuthModal();
     } catch (err) {
       this.handleAuthError(err);
     }
@@ -528,26 +248,24 @@ const FirebaseAuthManager = {
   },
 
   signInAsDemoUser() {
-    const defaultName = "Excel Pro Learner";
+    const defaultName = "Guest Learner (ડેમો યુઝર)";
     this.currentUser = {
       uid: "demo-usr-" + Math.floor(1000 + Math.random() * 9000),
       displayName: defaultName,
-      email: "learner@excelmaster.pro",
+      email: "guest@excelmaster.pro",
       photoURL: null
     };
     localStorage.setItem('excel_master_mock_user', JSON.stringify(this.currentUser));
-    if (typeof App !== 'undefined') {
-      App.showToast("ગેસ્ટ તરીકે લૉગિન: " + defaultName);
-    }
-    this.renderHeaderAuthButton();
-    this.closeAuthModal();
-    if (typeof App !== 'undefined') {
-      App.checkAuthGate();
-    }
-
+    
     // Auto update certificate name
     const certInput = document.getElementById('certCandidateName');
     if (certInput) certInput.value = defaultName;
+
+    this.renderHeaderAuthButton();
+    if (typeof App !== 'undefined') {
+      App.showToast("ગેસ્ટ તરીકે પ્રવેશ સફળ: સાઇટ અનલોક થઈ ગઈ!");
+      App.checkAuthGate();
+    }
   },
 
   signOutUser() {
@@ -557,12 +275,14 @@ const FirebaseAuthManager = {
     this.currentUser = null;
     localStorage.removeItem('excel_master_mock_user');
     localStorage.removeItem('excel_master_user_profile');
-    if (typeof App !== 'undefined') {
-      App.showToast("સફળતાપૂર્વક લોગ આઉટ થયા.");
-      App.checkAuthGate();
-    }
+    
     this.renderHeaderAuthButton();
     this.closeProfileMenu();
+
+    if (typeof App !== 'undefined') {
+      App.showToast("સફળતાપૂર્વક લોગ આઉટ થયા. સાઇટ ફરીથી લોક થઈ છે.");
+      App.checkAuthGate();
+    }
   },
 
   openProfileMenu() {
@@ -601,22 +321,17 @@ const FirebaseAuthManager = {
       </div>
 
       <div class="space-y-1 text-xs">
-        <button class="w-full text-left p-2 rounded-lg hover:bg-card-subtle font-semibold flex items-center gap-2"
+        <button class="w-full text-left p-2 rounded-lg hover:bg-card-subtle font-semibold flex items-center gap-2 cursor-pointer"
                 onclick="App.switchTab('certificate'); FirebaseAuthManager.closeProfileMenu();">
           🎓 મારું સર્ટિફિકેટ જુઓ
         </button>
 
-        <button class="w-full text-left p-2 rounded-lg hover:bg-card-subtle font-semibold flex items-center gap-2"
+        <button class="w-full text-left p-2 rounded-lg hover:bg-card-subtle font-semibold flex items-center gap-2 cursor-pointer"
                 onclick="FirebaseAuthManager.syncCloudProgress()">
           ☁️ ક્લાઉડ સિંક કરો (Cloud Sync)
         </button>
 
-        <button class="w-full text-left p-2 rounded-lg hover:bg-card-subtle font-semibold flex items-center gap-2"
-                onclick="FirebaseAuthManager.openConfigModal(); FirebaseAuthManager.closeProfileMenu();">
-          ⚙️ Firebase સેટિંગ્સ
-        </button>
-
-        <button class="w-full text-left p-2 rounded-lg hover:bg-card-subtle font-semibold text-red-500 flex items-center gap-2"
+        <button class="w-full text-left p-2 rounded-lg hover:bg-card-subtle font-semibold text-red-500 flex items-center gap-2 cursor-pointer"
                 onclick="FirebaseAuthManager.signOutUser()">
           🚪 ${typeof I18N !== 'undefined' ? I18N.t('signOutBtn') : 'લોગ આઉટ'}
         </button>
@@ -625,7 +340,6 @@ const FirebaseAuthManager = {
 
     menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
 
-    // Click outside listener
     const closeListener = (e) => {
       if (!menu.contains(e.target) && !e.target.closest('.user-profile-badge')) {
         menu.style.display = 'none';
@@ -643,7 +357,6 @@ const FirebaseAuthManager = {
   async syncCloudProgress() {
     if (!this.currentUser) {
       if (typeof App !== 'undefined') App.showToast("પહેલાં સાઇન ઇન કરો.");
-      this.openAuthModal();
       return;
     }
 
@@ -660,7 +373,6 @@ const FirebaseAuthManager = {
 
     localStorage.setItem('excel_master_cloud_backup', JSON.stringify(syncData));
 
-    // Sync to Cloud Firestore if initialized and user is logged in
     if (this.db && this.currentUser.uid) {
       try {
         await this.db.collection('excel_users').doc(this.currentUser.uid).set(syncData, { merge: true });
