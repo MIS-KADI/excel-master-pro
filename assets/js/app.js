@@ -17,11 +17,17 @@ const App = {
     this.initNavigation();
     this.initSearch();
     this.initPWA();
+    if (typeof FirebaseAuthManager !== 'undefined') {
+      FirebaseAuthManager.init();
+    }
     this.render();
 
     // Subscribe to translation updates
     I18N.subscribe(() => {
       this.updateStaticUIText();
+      if (typeof FirebaseAuthManager !== 'undefined') {
+        FirebaseAuthManager.renderHeaderAuthButton();
+      }
       this.render();
     });
   },

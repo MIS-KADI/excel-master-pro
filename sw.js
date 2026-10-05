@@ -1,5 +1,5 @@
 // Excel Master Service Worker for Offline PWA Support
-const CACHE_NAME = 'excel-master-v3';
+const CACHE_NAME = 'excel-master-v4';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
@@ -20,6 +20,7 @@ const ASSETS_TO_CACHE = [
   './assets/js/certificate.js',
   './assets/js/export-utils.js',
   './assets/js/voice.js',
+  './assets/js/firebase-auth.js',
   './assets/js/app.js'
 ];
 

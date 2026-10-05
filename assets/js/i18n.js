@@ -50,6 +50,21 @@ const I18N = {
       coursePendingStatus: "Course Incomplete",
       examPassedStatus: "Live Exam Passed",
       examPendingStatus: "Live Exam Not Passed Yet",
+
+      // Firebase Authentication
+      signInBtn: "Sign In",
+      signOutBtn: "Sign Out",
+      authModalTitle: "Sign in to Excel Master",
+      authModalSubtitle: "Sync course progress, exam scores, and verified certificates to the cloud.",
+      googleSignIn: "Continue with Google",
+      orEmailLabel: "Or continue with Email",
+      emailPlaceholder: "Your Email address...",
+      passwordPlaceholder: "Password...",
+      authSubmitSignIn: "Sign In",
+      authSubmitSignUp: "Create Account",
+      noAccountText: "Don't have an account? Sign Up",
+      alreadyAccountText: "Already have an account? Sign In",
+      cloudSyncSuccess: "Your progress and certification status have been synced to the cloud!",
       
       // Categories
       catAll: "All Categories",
@@ -214,6 +229,21 @@ const I18N = {
       examPassedStatus: "લાઈવ પરીક્ષા પાસ કરેલ છે",
       examPendingStatus: "લાઈવ પરીક્ષા પાસ કરવાની બાકી છે",
 
+      // Firebase Authentication
+      signInBtn: "સાઇન ઇન",
+      signOutBtn: "લોગ આઉટ",
+      authModalTitle: "એક્સેલ માસ્ટરમાં સાઇન ઇન કરો",
+      authModalSubtitle: "કોર્સ પ્રગતિ, પરીક્ષા સ્કોર અને સર્ટિફિકેટ ક્લાઉડમાં સુરક્ષિત સેવ કરો.",
+      googleSignIn: "Google વડે સાઇન ઇન કરો",
+      orEmailLabel: "અથવા ઈમેલ વડે આગળ વધો",
+      emailPlaceholder: "તમારું ઈમેલ એડ્રેસ...",
+      passwordPlaceholder: "પાસવર્ડ...",
+      authSubmitSignIn: "સાઇન ઇન કરો",
+      authSubmitSignUp: "નવું ખાતું બનાવો",
+      noAccountText: "ખાતું નથી? નવું ખાતું બનાવો",
+      alreadyAccountText: "પહેલેથી ખાતું છે? સાઇન ઇન કરો",
+      cloudSyncSuccess: "તમારો ડેટા ક્લાઉડ સાથે સફળતાપૂર્વક સિંક થઈ ગયો છે!",
+
       // Categories
       catAll: "બધી કેટેગરી",
       catMath: "ગણતરી અને મેથ્સ (Math)",
@@ -376,6 +406,21 @@ const I18N = {
       coursePendingStatus: "कोर्स अभी अधूरा है",
       examPassedStatus: "लाइव परीक्षा उत्तीर्ण",
       examPendingStatus: "लाइव परीक्षा उत्तीर्ण होना बाकी है",
+
+      // Firebase Authentication
+      signInBtn: "साइन इन",
+      signOutBtn: "लॉग आउट",
+      authModalTitle: "एक्सेल मास्टर में साइन इन करें",
+      authModalSubtitle: "कोर्स प्रगति, परीक्षा स्कोर और प्रमाण पत्र क्लाउड में सुरक्षित रखें।",
+      googleSignIn: "Google के साथ जारी रखें",
+      orEmailLabel: "या ईमेल द्वारा आगे बढ़ें",
+      emailPlaceholder: "आपका ईमेल पता...",
+      passwordPlaceholder: "पासवर्ड...",
+      authSubmitSignIn: "साइन इन करें",
+      authSubmitSignUp: "नया खाता बनाएं",
+      noAccountText: "खाता नहीं है? नया बनाएं",
+      alreadyAccountText: "पहले से खाता है? साइन इन करें",
+      cloudSyncSuccess: "आपका डेटा क्लाउड के साथ सफलतापूर्वक सिंक हो गया है!",
 
       // Categories
       catAll: "सभी श्रेणियां",

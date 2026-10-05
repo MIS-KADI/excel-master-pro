@@ -154,6 +154,14 @@
           <button id="themeToggleBtn" class="btn-icon" title="Toggle Dark/Light Mode" aria-label="Toggle Theme">
             <span id="themeToggleIcon">🌙</span>
           </button>
+
+          <!-- Firebase User Profile / Sign-In Button -->
+          <div class="user-auth-wrap" id="userAuthContainer">
+            <button id="authModalBtn" class="btn btn-secondary btn-sm flex items-center gap-1.5 font-bold" onclick="FirebaseAuthManager.openAuthModal()">
+              <span>👤</span>
+              <span data-i18n="signInBtn">સાઇન ઇન</span>
+            </button>
+          </div>
         </div>
       </header>
 
@@ -213,6 +221,10 @@
   <script src="./assets/js/certificate.js"></script>
   <script src="./assets/js/export-utils.js"></script>
   <script src="./assets/js/voice.js"></script>
+  <!-- Firebase App & Auth SDK (v10 compat) -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+  <script src="./assets/js/firebase-auth.js"></script>
   <script src="./assets/js/app.js"></script>
 
 </body>
