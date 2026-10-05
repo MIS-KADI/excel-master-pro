@@ -24,8 +24,36 @@ const FirebaseAuthManager = {
   // Active configuration (prefers stored, fallbacks to official defaultConfig)
   config: null,
 
+  isLoggedIn() {
+    if (this.currentUser && (this.currentUser.uid || this.currentUser.email)) {
+      return true;
+    }
+    const profile = localStorage.getItem('excel_master_user_profile');
+    if (profile) {
+      try {
+        const u = JSON.parse(profile);
+        if (u && (u.uid || u.email)) {
+          this.currentUser = u;
+          return true;
+        }
+      } catch (e) {}
+    }
+    const mockUser = localStorage.getItem('excel_master_mock_user');
+    if (mockUser) {
+      try {
+        const u = JSON.parse(mockUser);
+        if (u && (u.uid || u.email)) {
+          this.currentUser = u;
+          return true;
+        }
+      } catch (e) {}
+    }
+    return false;
+  },
+
   init() {
     this.resolveConfig();
+    this.isLoggedIn();
     this.setupFirebase();
     this.renderHeaderAuthButton();
   },
@@ -79,8 +107,8 @@ const FirebaseAuthManager = {
 
       // Listen for auth state changes
       this.auth.onAuthStateChanged(async (user) => {
-        this.currentUser = user;
         if (user) {
+          this.currentUser = user;
           const profileData = {
             uid: user.uid,
             displayName: user.displayName || user.email.split('@')[0],
@@ -99,11 +127,17 @@ const FirebaseAuthManager = {
           this.restoreCloudProgress(user.uid);
 
         } else {
-          localStorage.removeItem('excel_master_user_profile');
+          const mockUser = localStorage.getItem('excel_master_mock_user');
+          if (mockUser) {
+            try { this.currentUser = JSON.parse(mockUser); } catch(e) { this.currentUser = null; }
+          } else {
+            this.currentUser = null;
+            localStorage.removeItem('excel_master_user_profile');
+          }
         }
         this.renderHeaderAuthButton();
-        if (typeof App !== 'undefined' && App.activeTab === 'auth') {
-          App.render();
+        if (typeof App !== 'undefined') {
+          App.checkAuthGate();
         }
       });
 
@@ -426,6 +460,7 @@ const FirebaseAuthManager = {
       const userName = result.user.displayName || result.user.email;
       if (typeof App !== 'undefined') {
         App.showToast("સફળતાપૂર્વક સાઇન ઇન: " + userName);
+        App.checkAuthGate();
       }
       this.closeAuthModal();
     } catch (err) {
@@ -507,7 +542,7 @@ const FirebaseAuthManager = {
     this.renderHeaderAuthButton();
     this.closeAuthModal();
     if (typeof App !== 'undefined') {
-      App.render();
+      App.checkAuthGate();
     }
 
     // Auto update certificate name
@@ -524,7 +559,7 @@ const FirebaseAuthManager = {
     localStorage.removeItem('excel_master_user_profile');
     if (typeof App !== 'undefined') {
       App.showToast("સફળતાપૂર્વક લોગ આઉટ થયા.");
-      App.render();
+      App.checkAuthGate();
     }
     this.renderHeaderAuthButton();
     this.closeProfileMenu();

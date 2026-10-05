@@ -488,3 +488,65 @@ kbd {
     margin-bottom: 1rem;
   }
 }
+
+/* ==========================================================================
+   Auth Gateway Screen (Site Lock until Login)
+   ========================================================================== */
+.auth-gateway-screen {
+  min-height: 100vh;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: radial-gradient(circle at 10% 20%, rgba(16, 124, 65, 0.08) 0%, transparent 40%),
+              radial-gradient(circle at 90% 80%, rgba(16, 185, 129, 0.06) 0%, transparent 40%),
+              var(--bg-page);
+  padding: 2rem 1rem;
+  position: relative;
+  z-index: 1000;
+}
+
+.auth-gateway-screen.hidden {
+  display: none !important;
+}
+
+.auth-gateway-card {
+  width: 100%;
+  max-width: 520px;
+  background-color: var(--bg-card);
+  border: 1.5px solid var(--border-color);
+  border-radius: 24px;
+  box-shadow: var(--shadow-lg), 0 20px 40px -15px rgba(0, 0, 0, 0.12);
+  padding: 2.25rem 2rem;
+  position: relative;
+}
+
+@media (max-width: 640px) {
+  .auth-gateway-card {
+    padding: 1.5rem 1.25rem;
+    border-radius: 20px;
+  }
+}
+
+.auth-tab-btn {
+  flex: 1;
+  padding: 0.75rem 0.5rem;
+  text-align: center;
+  font-size: 0.95rem;
+  font-weight: 800;
+  border-bottom: 2.5px solid transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  background: none;
+  border-top: none;
+  border-left: none;
+  border-right: none;
+  transition: all 0.2s ease;
+  font-family: inherit;
+}
+
+.auth-tab-btn.active {
+  color: var(--excel-primary);
+  border-bottom-color: var(--excel-primary);
+}
+

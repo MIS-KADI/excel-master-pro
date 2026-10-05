@@ -29,7 +29,7 @@
 <body>
 
   <!-- Full App Shell Wrapper -->
-  <div class="app-wrapper">
+  <div class="app-wrapper" id="appShellWrapper">
 
     <!-- Left Desktop Sidebar Navigation -->
     <aside class="sidebar">
@@ -179,7 +179,7 @@
   </div>
 
   <!-- Mobile Bottom Navigation Bar -->
-  <nav class="mobile-bottom-nav">
+  <nav class="mobile-bottom-nav" id="mobileBottomNav">
     <button class="mobile-nav-btn active" data-tab="formulas">
       <span class="icon">📊</span>
       <span data-i18n="tabFormulas">ફોર્મુલા</span>
@@ -202,6 +202,9 @@
     </button>
   </nav>
 
+  <!-- Login & Sign Up Gateway Screen (Site opens ONLY after login) -->
+  <div id="authGatewayScreen" class="auth-gateway-screen hidden"></div>
+
   <!-- Formula Details Fullscreen/Center Modal -->
   <div class="modal-backdrop" id="formulaModal" onclick="if(event.target === this) App.closeFormulaModal()">
     <div class="modal-content">
@@ -213,25 +216,25 @@
   <!-- Floating Toast Notifications -->
   <div class="toast-container" id="toastContainer"></div>
 
-  <!-- Application Logic Scripts (Strict Dependency Order) -->
-  <script src="./assets/js/i18n.js"></script>
-  <script src="./assets/js/formulas-data.js"></script>
-  <script src="./assets/js/shortcuts-data.js"></script>
-  <script src="./assets/js/errors-data.js"></script>
-  <script src="./assets/js/playground.js"></script>
-  <script src="./assets/js/generator.js"></script>
-  <script src="./assets/js/course-data.js"></script>
-  <script src="./assets/js/quiz-data.js"></script>
-  <script src="./assets/js/shortcut-tester.js"></script>
-  <script src="./assets/js/certificate.js"></script>
-  <script src="./assets/js/export-utils.js"></script>
-  <script src="./assets/js/voice.js"></script>
+  <!-- Application Logic Scripts (Strict Dependency Order with v5 cache-busting) -->
+  <script src="./assets/js/i18n.js?v=5.0"></script>
+  <script src="./assets/js/formulas-data.js?v=5.0"></script>
+  <script src="./assets/js/shortcuts-data.js?v=5.0"></script>
+  <script src="./assets/js/errors-data.js?v=5.0"></script>
+  <script src="./assets/js/playground.js?v=5.0"></script>
+  <script src="./assets/js/generator.js?v=5.0"></script>
+  <script src="./assets/js/course-data.js?v=5.0"></script>
+  <script src="./assets/js/quiz-data.js?v=5.0"></script>
+  <script src="./assets/js/shortcut-tester.js?v=5.0"></script>
+  <script src="./assets/js/certificate.js?v=5.0"></script>
+  <script src="./assets/js/export-utils.js?v=5.0"></script>
+  <script src="./assets/js/voice.js?v=5.0"></script>
   <!-- Firebase App, Auth & Firestore SDK (v10 compat) -->
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
-  <script src="./assets/js/firebase-auth.js"></script>
-  <script src="./assets/js/app.js"></script>
+  <script src="./assets/js/firebase-auth.js?v=5.0"></script>
+  <script src="./assets/js/app.js?v=5.0"></script>
 
 </body>
 </html>
