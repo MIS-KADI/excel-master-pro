@@ -1,0 +1,82 @@
+name: Build and Release Android APK
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    name: Build Android APK
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up Java Development Kit (JDK)
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'zulu'
+          java-version: '21'
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install Dependencies
+        run: npm install
+
+      - name: Prepare Web Assets in www folder
+        run: |
+          mkdir -p www
+          cp -r index.html manifest.json sw.js assets www/
+
+      - name: Sync Capacitor Android
+        run: npx cap sync android
+
+      - name: Build Android Debug APK
+        run: |
+          cd android
+          chmod +x gradlew
+          ./gradlew assembleDebug --stacktrace
+
+      - name: Copy and Rename APK Artifact
+        run: |
+          cp android/app/build/outputs/apk/debug/app-debug.apk Excel-Master-Pro.apk
+          ls -la Excel-Master-Pro.apk
+
+      - name: Upload APK as Workflow Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Excel-Master-Pro-APK
+          path: Excel-Master-Pro.apk
+
+      - name: Create or Update GitHub Release with APK
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v1.0.0
+          name: "Excel Master Pro v1.0.0 (Official Android APK)"
+          body: |
+            ## 📱 Excel Master Pro - Official Android APK Download
+
+            આ ફાઇલ ડાઉનલોડ કરીને તમારા એન્ડ્રોઇડ સ્માર્ટફોનમાં સીધી ઇન્સ્ટોલ કરો:
+            - **એપ્લિકેશન નામ**: Excel Master Pro
+            - **ફાઇલ**: `Excel-Master-Pro.apk`
+            - **વર્ઝન**: v1.0.0
+            - **ભાષાઓ**: ગુજરાતી, हिन्दी, English
+            - **વિશેષતાઓ**: ૫૦+ ફોર્મુલા, ૮૦+ શોર્ટકટ્સ, ૭ મોડ્યુલ કોર્સ, ૫૦ પ્રશ્નોની લાઈવ પરીક્ષા, ગોલ્ડ-સીલ સર્ટિફિકેટ
+
+            ### 📲 ઇન્સ્ટોલેશન ગાઈડ:
+            1. નીચે આપેલી **`Excel-Master-Pro.apk`** ફાઇલ પર ક્લિક કરી ડાઉનલોડ કરો.
+            2. ડાઉનલોડ થયા બાદ તે ફાઇલ પર ટેપ કરો.
+            3. જો તમારા ફોનમાં "Install Unknown Apps" ની પરવાનગી પૂછે તો "Allow" અથવા "ચાલુ કરો".
+            4. **"Install"** બટન પર ક્લિક કરો.
+          files: Excel-Master-Pro.apk
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
