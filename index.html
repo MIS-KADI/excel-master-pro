@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="gu" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+  
+  <title>Excel Master Pro - એક્સેલ ફોર્મુલા અને શોર્ટકટ્સ માસ્ટર</title>
+  <meta name="description" content="સંપૂર્ણ એક્સેલ ગાઈડ: તમામ ફોર્મુલા, કીબોર્ડ શોર્ટકટ્સ, લાઈવ ટેબલ ઉદાહરણો અને પ્રેક્ટિસ ગુજરાતી, હિન્દી અને અંગ્રેજીમાં.">
+  <meta name="theme-color" content="#107c41">
+
+  <!-- PWA & Mobile Web App Meta -->
+  <link rel="manifest" href="./manifest.json">
+  <link rel="icon" type="image/svg+xml" href="./assets/icons/icon.svg">
+  <link rel="apple-touch-icon" href="./assets/icons/icon.svg">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Excel Master">
+
+  <!-- Typography: Noto Sans Gujarati & Devanagari with local fallbacks -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Noto+Sans+Devanagari:wght@400;600;700;800&family=Noto+Sans+Gujarati:wght@400;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- Stylesheets -->
+  <link rel="stylesheet" href="./assets/css/style.css">
+  <link rel="stylesheet" href="./assets/css/excel-grid.css">
+  <link rel="stylesheet" href="./assets/css/components.css">
+</head>
+<body>
+
+  <!-- Full App Shell Wrapper -->
+  <div class="app-wrapper">
+
+    <!-- Left Desktop Sidebar Navigation -->
+    <aside class="sidebar">
+      <div class="sidebar-brand">
+        <img src="./assets/icons/icon.svg" alt="Excel Master Logo" class="brand-icon" />
+        <div class="brand-info">
+          <h1 data-i18n="appName">એક્સેલ માસ્ટર પ્રો</h1>
+          <span data-i18n="appTagline">ફોર્મુલા & શોર્ટકટ્સ ગાઈડ</span>
+        </div>
+      </div>
+
+      <nav class="nav-menu">
+        <button class="nav-item active" data-tab="formulas">
+          <span class="nav-icon">📊</span>
+          <span data-i18n="tabFormulas">ફોર્મુલા અને ફંકશન</span>
+        </button>
+
+        <button class="nav-item" data-tab="shortcuts">
+          <span class="nav-icon">⌨️</span>
+          <span data-i18n="tabShortcuts">કીબોર્ડ શોર્ટકટ્સ</span>
+        </button>
+
+        <button class="nav-item" data-tab="course">
+          <span class="nav-icon">📚</span>
+          <span data-i18n="tabCourse">એક્સેલ ઓનલાઇન કોર્સ</span>
+        </button>
+
+        <button class="nav-item" data-tab="exam">
+          <span class="nav-icon">⏱️</span>
+          <span data-i18n="tabExam">લાઈવ પરીક્ષા</span>
+        </button>
+
+        <button class="nav-item" data-tab="playground">
+          <span class="nav-icon">🧪</span>
+          <span data-i18n="tabPlayground">લાઈવ પ્લેગ્રાઉન્ડ</span>
+        </button>
+
+        <button class="nav-item" data-tab="generator">
+          <span class="nav-icon">⚡</span>
+          <span data-i18n="tabGenerator">ફોર્મુલા સહાયક</span>
+        </button>
+
+        <button class="nav-item" data-tab="quiz">
+          <span class="nav-icon">🏆</span>
+          <span data-i18n="tabQuiz">ક્વિઝ અને ટેસ્ટ</span>
+        </button>
+
+        <button class="nav-item" data-tab="errors">
+          <span class="nav-icon">⚠️</span>
+          <span data-i18n="tabErrors">એક્સેલ એરર્સ માસ્ટર ગાઈડ</span>
+        </button>
+
+        <button class="nav-item" data-tab="shortcutGame">
+          <span class="nav-icon">🎮</span>
+          <span data-i18n="tabShortcutGame">શોર્ટકટ ગેમ</span>
+        </button>
+
+        <button class="nav-item" data-tab="practiceSheets">
+          <span class="nav-icon">📥</span>
+          <span data-i18n="tabPracticeSheets">પ્રેક્ટિસ શીટ્સ</span>
+        </button>
+
+        <button class="nav-item" data-tab="certificate">
+          <span class="nav-icon">🎓</span>
+          <span data-i18n="tabCertificate">સર્ટિફિકેટ</span>
+        </button>
+
+        <button class="nav-item" data-tab="favorites">
+          <span class="nav-icon">⭐</span>
+          <span data-i18n="tabFavorites">મનપસંદ (સેવ કરેલ)</span>
+        </button>
+
+        <button class="nav-item" data-tab="cheatsheet">
+          <span class="nav-icon">📄</span>
+          <span data-i18n="tabCheatSheet">ચીટ શીટ</span>
+        </button>
+      </nav>
+
+      <div class="sidebar-footer">
+        <p data-i18n="footerText">વિદ્યાર્થીઓ, એકાઉન્ટન્ટ્સ અને કર્મચારીઓ માટે સંપૂર્ણ સહાયક.</p>
+      </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <div class="main-wrapper">
+
+      <!-- Sticky Top Header Navbar -->
+      <header class="top-header">
+        <div class="flex items-center gap-3">
+          <button class="btn-mobile-menu" id="mobileMenuBtn" aria-label="Open Navigation Menu">
+            ☰
+          </button>
+          <div class="header-search">
+            <div class="search-input-wrap">
+              <span class="search-icon">🔍</span>
+              <input type="text" 
+                     id="globalSearchInput" 
+                     class="search-input" 
+                     placeholder="કોઈપણ ફોર્મુલા, શોર્ટકટ કે ફંકશન શોધો..." 
+                     autocomplete="off" />
+            </div>
+          </div>
+        </div>
+
+        <div class="header-actions">
+          <!-- Install App Button (Visible on mobile/desktop PWA support) -->
+          <button id="pwaInstallBtn" class="btn btn-primary btn-sm hidden">
+            📥 <span data-i18n="installApp">એપ ઇન્સ્ટોલ કરો</span>
+          </button>
+
+          <!-- Trilingual Language Dropdown -->
+          <div class="lang-select-wrap">
+            <select id="langSelect" class="lang-select" aria-label="Language Selector">
+              <option value="gu">ગુજરાતી</option>
+              <option value="hi">हिन्दी</option>
+              <option value="en">English</option>
+            </select>
+            <span class="lang-caret">▼</span>
+          </div>
+
+          <!-- Dark / Light Mode Toggle Button -->
+          <button id="themeToggleBtn" class="btn-icon" title="Toggle Dark/Light Mode" aria-label="Toggle Theme">
+            <span id="themeToggleIcon">🌙</span>
+          </button>
+        </div>
+      </header>
+
+      <!-- Dynamic Content Body -->
+      <main class="content-body" id="mainContentBody">
+        <!-- Rendered dynamically by app.js -->
+      </main>
+
+    </div>
+  </div>
+
+  <!-- Mobile Bottom Navigation Bar -->
+  <nav class="mobile-bottom-nav">
+    <button class="mobile-nav-btn active" data-tab="formulas">
+      <span class="icon">📊</span>
+      <span data-i18n="tabFormulas">ફોર્મુલા</span>
+    </button>
+    <button class="mobile-nav-btn" data-tab="shortcuts">
+      <span class="icon">⌨️</span>
+      <span data-i18n="tabShortcuts">શોર્ટકટ્સ</span>
+    </button>
+    <button class="mobile-nav-btn" data-tab="playground">
+      <span class="icon">🧪</span>
+      <span data-i18n="tabPlayground">પ્રેક્ટિસ</span>
+    </button>
+    <button class="mobile-nav-btn" data-tab="generator">
+      <span class="icon">⚡</span>
+      <span data-i18n="tabGenerator">સહાયક</span>
+    </button>
+    <button class="mobile-nav-btn" data-tab="quiz">
+      <span class="icon">🏆</span>
+      <span data-i18n="tabQuiz">ટેસ્ટ</span>
+    </button>
+  </nav>
+
+  <!-- Formula Details Fullscreen/Center Modal -->
+  <div class="modal-backdrop" id="formulaModal" onclick="if(event.target === this) App.closeFormulaModal()">
+    <div class="modal-content">
+      <button class="modal-close-btn" onclick="App.closeFormulaModal()" aria-label="Close Modal">✕</button>
+      <div id="modalBody"></div>
+    </div>
+  </div>
+
+  <!-- Floating Toast Notifications -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <!-- Application Logic Scripts (Strict Dependency Order) -->
+  <script src="./assets/js/i18n.js"></script>
+  <script src="./assets/js/formulas-data.js"></script>
+  <script src="./assets/js/shortcuts-data.js"></script>
+  <script src="./assets/js/errors-data.js"></script>
+  <script src="./assets/js/playground.js"></script>
+  <script src="./assets/js/generator.js"></script>
+  <script src="./assets/js/course-data.js"></script>
+  <script src="./assets/js/quiz-data.js"></script>
+  <script src="./assets/js/shortcut-tester.js"></script>
+  <script src="./assets/js/certificate.js"></script>
+  <script src="./assets/js/export-utils.js"></script>
+  <script src="./assets/js/voice.js"></script>
+  <script src="./assets/js/app.js"></script>
+
+</body>
+</html>

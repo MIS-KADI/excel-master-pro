@@ -1,0 +1,20 @@
+{
+  "name": "Excel Master - ફોર્મુલા & શોર્ટકટ્સ | फॉर्मूला व शॉर्टकट्स",
+  "short_name": "Excel Master",
+  "description": "સંપૂર્ણ એક્સેલ ગાઈડ: તમામ ફોર્મુલા, શોર્ટકટ્સ, ટેબલ ઉદાહરણો અને પ્રેક્ટિસ ગુજરાતી, હિન્દી અને અંગ્રેજીમાં.",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#0f172a",
+  "theme_color": "#107c41",
+  "icons": [
+    {
+      "src": "./assets/icons/icon.svg",
+      "sizes": "192x192 512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["productivity", "education", "utilities"],
+  "lang": "gu"
+}

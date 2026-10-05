@@ -1,0 +1,71 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="100%" height="100%">
+  <defs>
+    <linearGradient id="excelGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#107c41" />
+      <stop offset="100%" stop-color="#0b552c" />
+    </linearGradient>
+    <linearGradient id="cardGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.2" />
+      <stop offset="100%" stop-color="#ffffff" stop-opacity="0.05" />
+    </linearGradient>
+    <filter id="shadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="12" stdDeviation="16" flood-color="#000" flood-opacity="0.25"/>
+    </filter>
+  </defs>
+  
+  <!-- Outer Rounded Container -->
+  <rect width="512" height="512" rx="110" fill="url(#excelGrad)" />
+  
+  <!-- Grid Sheet Mockup -->
+  <g transform="translate(70, 75)" filter="url(#shadow)">
+    <!-- Sheet background -->
+    <rect width="372" height="362" rx="28" fill="#ffffff" />
+    
+    <!-- Header Row (Green) -->
+    <path d="M 0 28 Q 0 0 28 0 L 344 0 Q 372 0 372 28 L 372 70 L 0 70 Z" fill="#107c41" />
+    
+    <!-- Sheet Column Headers A, B, C -->
+    <text x="60" y="46" font-family="'Segoe UI', Roboto, sans-serif" font-weight="700" font-size="24" fill="#ffffff" text-anchor="middle">fx</text>
+    <text x="145" y="46" font-family="'Segoe UI', Roboto, sans-serif" font-weight="700" font-size="20" fill="#d1fae5" text-anchor="middle">A</text>
+    <text x="235" y="46" font-family="'Segoe UI', Roboto, sans-serif" font-weight="700" font-size="20" fill="#d1fae5" text-anchor="middle">B</text>
+    <text x="320" y="46" font-family="'Segoe UI', Roboto, sans-serif" font-weight="700" font-size="20" fill="#d1fae5" text-anchor="middle">C</text>
+    
+    <!-- Grid Lines & Cells -->
+    <line x1="0" y1="130" x2="372" y2="130" stroke="#e2e8f0" stroke-width="2" />
+    <line x1="0" y1="190" x2="372" y2="190" stroke="#e2e8f0" stroke-width="2" />
+    <line x1="0" y1="250" x2="372" y2="250" stroke="#e2e8f0" stroke-width="2" />
+    <line x1="0" y1="310" x2="372" y2="310" stroke="#e2e8f0" stroke-width="2" />
+    
+    <line x1="90" y1="70" x2="90" y2="362" stroke="#e2e8f0" stroke-width="2" />
+    <line x1="190" y1="70" x2="190" y2="362" stroke="#e2e8f0" stroke-width="2" />
+    <line x1="285" y1="70" x2="285" y2="362" stroke="#e2e8f0" stroke-width="2" />
+    
+    <!-- Row numbers -->
+    <text x="45" y="108" font-family="'Segoe UI', sans-serif" font-size="18" fill="#64748b" text-anchor="middle">1</text>
+    <text x="45" y="168" font-family="'Segoe UI', sans-serif" font-size="18" fill="#64748b" text-anchor="middle">2</text>
+    <text x="45" y="228" font-family="'Segoe UI', sans-serif" font-size="18" fill="#64748b" text-anchor="middle">3</text>
+    <text x="45" y="288" font-family="'Segoe UI', sans-serif" font-size="18" fill="#64748b" text-anchor="middle">4</text>
+    <text x="45" y="342" font-family="'Segoe UI', sans-serif" font-size="18" fill="#64748b" text-anchor="middle">5</text>
+    
+    <!-- Selected Highlight Cell -->
+    <rect x="190" y="190" width="95" height="60" fill="#dcfce7" stroke="#107c41" stroke-width="3" />
+    <text x="238" y="228" font-family="'Segoe UI', sans-serif" font-weight="bold" font-size="18" fill="#15803d" text-anchor="middle">=SUM()</text>
+
+    <!-- Formula Bar Floating Pill at Top -->
+    <rect x="95" y="85" width="265" height="34" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5" />
+    <text x="105" y="108" font-family="'Segoe UI', sans-serif" font-size="14" fill="#0f172a" font-weight="600">=SUM(B2:B4)</text>
+  </g>
+
+  <!-- Large Stylized "X" Excel Emblem Overlay -->
+  <g transform="translate(42, 170)" filter="url(#shadow)">
+    <rect width="135" height="150" rx="24" fill="#0f5c30" stroke="#34d399" stroke-width="4" />
+    <!-- Letter X -->
+    <path d="M 38 42 L 58 42 L 68 68 L 78 42 L 98 42 L 78 80 L 100 118 L 80 118 L 68 89 L 55 118 L 35 118 L 57 80 Z" fill="#ffffff" />
+  </g>
+
+  <!-- Multilingual & Shortcut Badges -->
+  <g transform="translate(320, 395)">
+    <rect width="145" height="42" rx="21" fill="#064e3b" stroke="#6ee7b7" stroke-width="2" />
+    <text x="72" y="27" font-family="'Noto Sans Gujarati', 'Noto Sans Devanagari', 'Segoe UI', sans-serif" font-weight="bold" font-size="16" fill="#ffffff" text-anchor="middle">ગુ | हि | EN</text>
+  </g>
+</svg>

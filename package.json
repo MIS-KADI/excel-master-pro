@@ -1,0 +1,21 @@
+{
+  "name": "excel-master-pro",
+  "version": "1.0.0",
+  "description": "Comprehensive Excel Formulas, Shortcuts, Interactive Tables, and Practice Web App in Gujarati, Hindi, and English",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "keywords": [
+    "excel",
+    "excel-formulas",
+    "shortcuts",
+    "gujarati",
+    "hindi",
+    "english",
+    "pwa",
+    "spreadsheet"
+  ],
+  "author": "",
+  "license": "MIT"
+}
