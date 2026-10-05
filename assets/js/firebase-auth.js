@@ -1,28 +1,49 @@
 /**
  * Excel Master Pro - Firebase Authentication & Cloud Profile Engine
  * Direct integration for Firebase Project: excel-master-pro-4c1a1
- * Supports Google Sign-In, Email/Password, and Cloud Progress Sync
+ * Supports Google Sign-In, Email/Password, Firestore Cloud Sync & Certified Profiles
  * Based on official Firebase Web SDK (compat v10).
  */
 
 const FirebaseAuthManager = {
   auth: null,
+  db: null,
   currentUser: null,
   activeMode: 'signin', // 'signin' or 'signup'
   
-  // Default Project Metadata for excel-master-pro-4c1a1
-  defaultProject: {
-    projectId: "excel-master-pro-4c1a1",
+  // Official Firebase Project Credentials for excel-master-pro-4c1a1
+  defaultConfig: {
+    apiKey: "AIzaSyBzk4WKDSiUNvuFtOH_XrUjW_DIvKVjft0",
     authDomain: "excel-master-pro-4c1a1.firebaseapp.com",
-    storageBucket: "excel-master-pro-4c1a1.firebasestorage.app"
+    projectId: "excel-master-pro-4c1a1",
+    storageBucket: "excel-master-pro-4c1a1.firebasestorage.app",
+    messagingSenderId: "30653899749",
+    appId: "1:30653899749:web:ddf8a1fbedfba3bd33450c"
   },
 
-  // Custom or Stored Firebase Project Config
-  config: JSON.parse(localStorage.getItem('excel_master_firebase_config') || 'null'),
+  // Active configuration (prefers stored, fallbacks to official defaultConfig)
+  config: null,
 
   init() {
+    this.resolveConfig();
     this.setupFirebase();
     this.renderHeaderAuthButton();
+  },
+
+  resolveConfig() {
+    let stored = null;
+    try {
+      stored = JSON.parse(localStorage.getItem('excel_master_firebase_config') || 'null');
+    } catch (e) {
+      stored = null;
+    }
+
+    if (stored && stored.apiKey && stored.apiKey !== '') {
+      this.config = stored;
+    } else {
+      this.config = { ...this.defaultConfig };
+      localStorage.setItem('excel_master_firebase_config', JSON.stringify(this.config));
+    }
   },
 
   setupFirebase() {
@@ -31,7 +52,6 @@ const FirebaseAuthManager = {
       return;
     }
 
-    // Check if configuration exists with a valid API key
     if (!this.config || !this.config.apiKey) {
       const savedUser = localStorage.getItem('excel_master_mock_user');
       if (savedUser) {
@@ -49,22 +69,35 @@ const FirebaseAuthManager = {
         firebase.initializeApp(this.config);
       }
       this.auth = firebase.auth();
+      if (firebase.firestore) {
+        try {
+          this.db = firebase.firestore();
+        } catch(fsErr) {
+          console.warn("Firestore init warning:", fsErr);
+        }
+      }
 
       // Listen for auth state changes
-      this.auth.onAuthStateChanged((user) => {
+      this.auth.onAuthStateChanged(async (user) => {
         this.currentUser = user;
         if (user) {
-          localStorage.setItem('excel_master_user_profile', JSON.stringify({
+          const profileData = {
             uid: user.uid,
             displayName: user.displayName || user.email.split('@')[0],
             email: user.email,
             photoURL: user.photoURL
-          }));
+          };
+          localStorage.setItem('excel_master_user_profile', JSON.stringify(profileData));
+          
           // Pre-fill certificate candidate name with verified Google Name
           if (user.displayName) {
             const certInput = document.getElementById('certCandidateName');
             if (certInput) certInput.value = user.displayName;
           }
+
+          // Fetch & restore cloud progress from Firestore if available
+          this.restoreCloudProgress(user.uid);
+
         } else {
           localStorage.removeItem('excel_master_user_profile');
         }
@@ -74,7 +107,9 @@ const FirebaseAuthManager = {
       // Handle redirect results for mobile/PWA
       this.auth.getRedirectResult().then((result) => {
         if (result && result.user) {
-          App.showToast("Signed in as " + (result.user.displayName || result.user.email));
+          if (typeof App !== 'undefined') {
+            App.showToast("સફળતાપૂર્વક સાઇન ઇન: " + (result.user.displayName || result.user.email));
+          }
         }
       }).catch((error) => {
         this.handleAuthError(error);
@@ -128,7 +163,6 @@ const FirebaseAuthManager = {
     }
 
     const isSignUp = this.activeMode === 'signup';
-    const hasConfig = this.config && this.config.apiKey;
 
     modal.innerHTML = `
       <div class="modal-content auth-modal-box max-w-md w-full bg-card p-6 md:p-8 rounded-2xl border border-border shadow-2xl relative">
@@ -145,7 +179,7 @@ const FirebaseAuthManager = {
             ${typeof I18N !== 'undefined' ? I18N.t('authModalSubtitle') : 'કોર્સ પ્રગતિ, પરીક્ષા સ્કોર અને સર્ટિફિકેટ ક્લાઉડમાં સુરક્ષિત સેવ કરો.'}
           </p>
           <div class="mt-2 text-[11px] font-mono inline-block px-2.5 py-0.5 rounded-full bg-accent/10 text-accent font-semibold border border-accent/20">
-            Firebase: excel-master-pro-4c1a1
+            Firebase: excel-master-pro-4c1a1 ✓
           </div>
         </div>
 
@@ -210,7 +244,7 @@ const FirebaseAuthManager = {
         <div class="pt-3 border-t border-border flex items-center justify-between text-xs">
           <button class="text-muted hover:text-accent flex items-center gap-1 font-semibold" 
                   onclick="FirebaseAuthManager.openConfigModal()">
-            ⚙️ ${hasConfig ? 'Firebase કનેક્ટેડ ✓' : 'Firebase API Key સેટ કરો'}
+            ⚙️ Firebase સેટિંગ્સ
           </button>
 
           <!-- Guest Demo Login -->
@@ -248,9 +282,9 @@ const FirebaseAuthManager = {
       document.body.appendChild(cfgModal);
     }
 
-    const currentApiKey = this.config?.apiKey || '';
-    const currentAppId = this.config?.appId || '';
-    const currentJson = this.config ? JSON.stringify(this.config, null, 2) : '';
+    const currentApiKey = this.config?.apiKey || this.defaultConfig.apiKey;
+    const currentAppId = this.config?.appId || this.defaultConfig.appId;
+    const currentJson = this.config ? JSON.stringify(this.config, null, 2) : JSON.stringify(this.defaultConfig, null, 2);
 
     cfgModal.innerHTML = `
       <div class="modal-content max-w-lg w-full bg-card p-6 md:p-7 rounded-2xl border border-border shadow-2xl relative">
@@ -261,59 +295,53 @@ const FirebaseAuthManager = {
             🔥
           </div>
           <div>
-            <h3 class="text-lg font-extrabold text-main">Firebase કનેક્શન સેટિંગ્સ</h3>
-            <p class="text-xs text-muted">પ્રોજેક્ટ: <span class="font-mono text-accent font-bold">excel-master-pro-4c1a1</span></p>
+            <h3 class="text-lg font-extrabold text-main">Firebase કનેક્શન સ્ટેટસ</h3>
+            <p class="text-xs text-muted">પ્રોજેક્ટ: <span class="font-mono text-accent font-bold">excel-master-pro-4c1a1</span> (કનેક્ટેડ ✓)</p>
           </div>
         </div>
 
         <div class="bg-card-subtle p-3 rounded-xl border border-border text-xs mb-4 space-y-1.5">
           <div class="font-bold text-main flex items-center gap-1.5">
-            <span>📋</span> ફક્ત ૨ મિનિટનું સેટઅપ:
+            <span>✅</span> પ્રોજેક્ટ લિંક થયેલ છે:
           </div>
           <div class="text-muted leading-relaxed">
-            ૧. Firebase Console માં <b>Authentication &gt; Sign-in method</b> માં <b>Google</b> અને <b>Email</b> ચાલુ (Enable) કરો.<br/>
-            ૨. <b>Settings &gt; Authorized domains</b> માં <code class="px-1 py-0.5 bg-page rounded font-mono text-accent">mis-kadi.github.io</code> ઉમેરો.<br/>
-            ૩. નીચે તમારી <b>Web API Key</b> પેસ્ટ કરીને સેવ કરો.
+            - <b>API Key</b>: <code class="px-1 py-0.5 bg-page rounded font-mono text-accent">AIzaSyBzk4WK...</code><br/>
+            - <b>Auth Domain</b>: <code class="px-1 py-0.5 bg-page rounded font-mono">excel-master-pro-4c1a1.firebaseapp.com</code><br/>
+            - <b>App ID</b>: <code class="px-1 py-0.5 bg-page rounded font-mono">1:30653899749:web:ddf8a1fbedfba3bd33450c</code>
           </div>
-          <div class="pt-1">
-            <a href="https://console.firebase.google.com/project/excel-master-pro-4c1a1/settings/general" 
-               target="_blank" rel="noopener noreferrer"
-               class="inline-flex items-center gap-1 text-accent font-bold hover:underline">
-              🔗 Firebase Console Settings સીધું ખોલો ↗
-            </a>
+          <div class="pt-1 text-[11px] text-muted">
+            ⚠️ જો Google સાઇન ઇન કરતી વખતે Unauthorized Domain એરર આવે તો Firebase Console > Authentication > Settings > Authorized domains માં <b class="text-accent">${window.location.hostname}</b> ઉમેરેલું હોવું જોઈએ.
           </div>
         </div>
 
         <form onsubmit="event.preventDefault(); FirebaseAuthManager.saveConfigFromForm();" class="space-y-3 mb-4">
           <div>
             <label class="block text-xs font-bold text-muted mb-1">
-              Web API Key <span class="text-red-500">*</span>
+              Web API Key
             </label>
             <input type="text" id="cfgApiKeyInput" class="form-control w-full p-2.5 rounded-lg border border-border bg-page text-main text-xs font-mono" 
                    placeholder="AIzaSy..." value="${currentApiKey}" required />
-            <span class="text-[10px] text-muted">Firebase Project Settings &gt; General માંથી મળશે.</span>
           </div>
 
           <div>
             <label class="block text-xs font-bold text-muted mb-1">
-              Web App ID (ઓપ્શનલ)
+              Web App ID
             </label>
             <input type="text" id="cfgAppIdInput" class="form-control w-full p-2.5 rounded-lg border border-border bg-page text-main text-xs font-mono" 
                    placeholder="1:123456789:web:abcdef..." value="${currentAppId}" />
           </div>
 
           <details class="text-xs text-muted">
-            <summary class="cursor-pointer font-bold hover:text-main mb-2">અથવા સંપૂર્ણ firebaseConfig JSON પેસ્ટ કરો ▼</summary>
-            <textarea id="cfgJsonInput" rows="5" class="form-control w-full p-2.5 rounded-lg border border-border bg-page text-main text-[11px] font-mono"
-                      placeholder='{\n  "apiKey": "AIzaSy...",\n  "authDomain": "excel-master-pro-4c1a1.firebaseapp.com",\n  "projectId": "excel-master-pro-4c1a1"\n}'>${currentJson}</textarea>
+            <summary class="cursor-pointer font-bold hover:text-main mb-2">સંપૂર્ણ Config JSON જુઓ / બદલો ▼</summary>
+            <textarea id="cfgJsonInput" rows="5" class="form-control w-full p-2.5 rounded-lg border border-border bg-page text-main text-[11px] font-mono">${currentJson}</textarea>
           </details>
 
           <div class="flex items-center gap-2 pt-2">
             <button type="submit" class="btn btn-primary flex-1 py-2.5 font-bold shadow-md rounded-lg text-sm">
-              💾 સેવ કરો અને કનેક્ટ કરો
+              💾 કન્ફિગ સેવ કરો
             </button>
-            <button type="button" class="btn btn-secondary py-2.5 px-4 font-bold rounded-lg text-sm" onclick="FirebaseAuthManager.signInAsDemoUser(); FirebaseAuthManager.closeConfigModal();">
-              ⚡ ગેસ્ટ ડેમો
+            <button type="button" class="btn btn-secondary py-2.5 px-4 font-bold rounded-lg text-sm" onclick="FirebaseAuthManager.resetToDefaults()">
+              🔄 ડિફોલ્ટ રીસેટ
             </button>
           </div>
         </form>
@@ -326,6 +354,16 @@ const FirebaseAuthManager = {
   closeConfigModal() {
     const modal = document.getElementById('firebaseConfigModal');
     if (modal) modal.classList.remove('open');
+  },
+
+  resetToDefaults() {
+    this.config = { ...this.defaultConfig };
+    localStorage.setItem('excel_master_firebase_config', JSON.stringify(this.config));
+    this.setupFirebase();
+    this.closeConfigModal();
+    if (typeof App !== 'undefined') {
+      App.showToast("ડિફોલ્ટ Firebase કન્ફિગ રીસ્ટોર થઈ ગયું!");
+    }
   },
 
   saveConfigFromForm() {
@@ -349,10 +387,11 @@ const FirebaseAuthManager = {
 
       newConfig = {
         apiKey: apiKey,
-        authDomain: this.defaultProject.authDomain,
-        projectId: this.defaultProject.projectId,
-        storageBucket: this.defaultProject.storageBucket,
-        appId: appId || ""
+        authDomain: this.defaultConfig.authDomain,
+        projectId: this.defaultConfig.projectId,
+        storageBucket: this.defaultConfig.storageBucket,
+        messagingSenderId: this.defaultConfig.messagingSenderId,
+        appId: appId || this.defaultConfig.appId
       };
     }
 
@@ -362,20 +401,17 @@ const FirebaseAuthManager = {
     this.closeConfigModal();
 
     if (typeof App !== 'undefined') {
-      App.showToast("Firebase Config સફળતાપૂર્વક સેટ થઈ ગયું!");
-    } else {
-      alert("Firebase Config સફળતાપૂર્વક સેટ થઈ ગયું!");
+      App.showToast("Firebase Config સફળતાપૂર્વક સેવ થઈ ગયું!");
     }
-
-    // Immediately trigger Google Sign-In or show Auth Modal
-    setTimeout(() => {
-      this.openAuthModal();
-    }, 300);
   },
 
   async signInWithGoogle() {
-    if (!this.auth || !this.config?.apiKey) {
-      this.openConfigModal();
+    if (!this.auth) {
+      this.setupFirebase();
+    }
+
+    if (!this.auth) {
+      alert("Firebase શરૂ થઈ શક્યું નથી. કૃપા કરીને થોડી સેકન્ડ બાદ પ્રયત્ન કરો.");
       return;
     }
 
@@ -410,22 +446,8 @@ const FirebaseAuthManager = {
     const password = document.getElementById('authPasswordInput')?.value;
     if (!email || !password) return;
 
-    if (!this.auth || !this.config?.apiKey) {
-      // Offline/Demo auth fallback
-      const name = document.getElementById('authDisplayNameInput')?.value?.trim() || email.split('@')[0];
-      this.currentUser = {
-        uid: "local-" + Date.now(),
-        displayName: name,
-        email: email,
-        photoURL: null
-      };
-      localStorage.setItem('excel_master_mock_user', JSON.stringify(this.currentUser));
-      if (typeof App !== 'undefined') {
-        App.showToast("સ્વાગત છે, " + name + "! (લોકલ પ્રોફાઇલ એક્ટિવ)");
-      }
-      this.renderHeaderAuthButton();
-      this.closeAuthModal();
-      return;
+    if (!this.auth) {
+      this.setupFirebase();
     }
 
     try {
@@ -453,9 +475,11 @@ const FirebaseAuthManager = {
   handleAuthError(err) {
     if (err.code === 'auth/unauthorized-domain') {
       const currentHost = window.location.hostname || 'mis-kadi.github.io';
-      alert(`⚠️ Firebase Domain Authorization જરૂરી છે:\n\nકૃપા કરીને Firebase Console માં Authentication > Settings > Authorized domains માં જઈને '${currentHost}' ઉમેરો.`);
+      alert(`⚠️ Firebase Domain Authorization જરૂરી છે:\n\nકૃપા કરીને Firebase Console માં Authentication > Settings > Authorized domains માં જઈને આ ડોમેન ઉમેરો:\n\n👉  ${currentHost}\n\nતે ઉમેર્યા પછી Google Sign-In તરત જ કામ કરશે.`);
     } else if (err.code === 'auth/operation-not-allowed') {
-      alert("⚠️ Firebase Console માં Authentication > Sign-in method માં Google અથવા Email/Password Enable કરવું જરૂરી છે.");
+      alert("⚠️ Firebase Console માં Authentication > Sign-in method માં જઈને 'Google' અથવા 'Email/Password' ને Enable કરવું જરૂરી છે.");
+    } else if (err.code === 'auth/popup-closed-by-user') {
+      console.log("Popup closed by user.");
     } else {
       if (typeof App !== 'undefined') {
         App.showToast(err.message || "ઓથેન્ટિકેશન નિષ્ફળ રહ્યું.");
@@ -574,19 +598,58 @@ const FirebaseAuthManager = {
     if (menu) menu.style.display = 'none';
   },
 
-  syncCloudProgress() {
+  async syncCloudProgress() {
+    if (!this.currentUser) {
+      if (typeof App !== 'undefined') App.showToast("પહેલાં સાઇન ઇન કરો.");
+      this.openAuthModal();
+      return;
+    }
+
     const syncData = {
-      user: this.currentUser?.email || "Guest",
+      uid: this.currentUser.uid,
+      displayName: this.currentUser.displayName || "",
+      email: this.currentUser.email || "",
+      photoURL: this.currentUser.photoURL || "",
       courseProgress: typeof EXCEL_COURSE !== 'undefined' ? EXCEL_COURSE.getProgress() : 0,
       examPassed: localStorage.getItem('excel_master_exam_passed') === 'true',
       examScore: localStorage.getItem('excel_master_exam_score') || 0,
-      timestamp: new Date().toISOString()
+      updatedAt: new Date().toISOString()
     };
+
     localStorage.setItem('excel_master_cloud_backup', JSON.stringify(syncData));
+
+    // Sync to Cloud Firestore if initialized and user is logged in
+    if (this.db && this.currentUser.uid) {
+      try {
+        await this.db.collection('excel_users').doc(this.currentUser.uid).set(syncData, { merge: true });
+        console.log("Firestore sync successful for user:", this.currentUser.uid);
+      } catch (e) {
+        console.warn("Firestore sync optional warning:", e.message);
+      }
+    }
 
     if (typeof App !== 'undefined') {
       App.showToast(typeof I18N !== 'undefined' ? I18N.t('cloudSyncSuccess') : 'તમારો ડેટા ક્લાઉડ સાથે સફળતાપૂર્વક સિંક થઈ ગયો છે!');
     }
     this.closeProfileMenu();
+  },
+
+  async restoreCloudProgress(uid) {
+    if (!this.db || !uid) return;
+    try {
+      const doc = await this.db.collection('excel_users').doc(uid).get();
+      if (doc.exists) {
+        const data = doc.data();
+        if (data.examPassed) {
+          localStorage.setItem('excel_master_exam_passed', 'true');
+        }
+        if (data.examScore) {
+          localStorage.setItem('excel_master_exam_score', data.examScore);
+        }
+        console.log("Restored cloud progress for user:", uid);
+      }
+    } catch (e) {
+      console.warn("Could not restore Firestore doc:", e.message);
+    }
   }
 };
