@@ -228,6 +228,8 @@ const App = {
       this.renderPracticeSheetsView(container);
     } else if (this.activeTab === 'certificate') {
       this.renderCertificateView(container);
+    } else if (this.activeTab === 'auth') {
+      this.renderAuthView(container);
     } else if (this.activeTab === 'favorites') {
       this.renderFavoritesView(container);
     } else if (this.activeTab === 'cheatsheet') {
@@ -1152,6 +1154,289 @@ const App = {
       toast.classList.remove('show');
       setTimeout(() => toast.remove(), 300);
     }, 2500);
+  },
+
+  /**
+   * 14. Dedicated Login & Sign Up Page
+   */
+  renderAuthView(container) {
+    const isUserLoggedIn = typeof FirebaseAuthManager !== 'undefined' && FirebaseAuthManager.currentUser;
+    const mode = typeof FirebaseAuthManager !== 'undefined' ? FirebaseAuthManager.activeMode : 'signin';
+
+    if (isUserLoggedIn) {
+      const user = FirebaseAuthManager.currentUser;
+      const name = user.displayName || user.email?.split('@')[0] || "Learner";
+      const email = user.email || "No email";
+      const photo = user.photoURL;
+      const courseProgress = typeof EXCEL_COURSE !== 'undefined' ? EXCEL_COURSE.getProgress() : 0;
+      const isCourseFinished = typeof EXCEL_COURSE !== 'undefined' && EXCEL_COURSE.isCourseFinished();
+      const examPassed = localStorage.getItem('excel_master_exam_passed') === 'true';
+
+      container.innerHTML = `
+        <div class="auth-page-wrapper max-w-3xl mx-auto py-6 px-4">
+          <!-- Profile Header Card -->
+          <div class="bg-card border border-border rounded-2xl p-6 md:p-8 shadow-md mb-6 relative overflow-hidden">
+            <div class="flex flex-col sm:flex-row items-center sm:items-start gap-5">
+              ${photo ? `
+                <img src="${photo}" alt="${this.escapeHtml(name)}" class="w-20 h-20 rounded-2xl object-cover border-2 border-accent shadow-md" />
+              ` : `
+                <div class="w-20 h-20 rounded-2xl bg-accent text-white font-extrabold flex items-center justify-center text-3xl shadow-md">
+                  ${name.charAt(0).toUpperCase()}
+                </div>
+              `}
+
+              <div class="flex-1 text-center sm:text-left">
+                <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-green-500/10 text-green-600 border border-green-500/20 mb-2">
+                  <span>✓</span> વેરિફાઇડ એકાઉન્ટ (Firebase Active)
+                </div>
+                <h2 class="text-2xl font-black text-main">${this.escapeHtml(name)}</h2>
+                <p class="text-sm text-muted font-mono">${this.escapeHtml(email)}</p>
+                <p class="text-[11px] text-light font-mono mt-1">UID: ${user.uid || 'local-user'}</p>
+              </div>
+
+              <div class="flex flex-col gap-2 w-full sm:w-auto">
+                <button class="btn btn-secondary btn-sm flex items-center justify-center gap-1.5 font-bold"
+                        onclick="FirebaseAuthManager.syncCloudProgress()">
+                  <span>☁️</span> ક્લાઉડ સિંક કરો
+                </button>
+                <button class="btn btn-sm border border-red-500/30 text-red-500 hover:bg-red-500/10 flex items-center justify-center gap-1.5 font-bold"
+                        onclick="FirebaseAuthManager.signOutUser(); App.render();">
+                  <span>🚪</span> લોગ આઉટ
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Learning & Certification Overview Grid -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+            <!-- Course Card -->
+            <div class="bg-card border border-border rounded-xl p-5 shadow-sm flex flex-col justify-between">
+              <div>
+                <div class="flex items-center justify-between mb-3">
+                  <span class="text-xs font-bold uppercase tracking-wider text-muted">ઓનલાઇન કોર્સ</span>
+                  <span class="px-2 py-0.5 rounded text-xs font-bold ${isCourseFinished ? 'bg-green-500/10 text-green-600' : 'bg-amber-500/10 text-amber-600'}">
+                    ${isCourseFinished ? '૧૦૦% પૂર્ણ ✓' : courseProgress + '% પ્રગતિ'}
+                  </span>
+                </div>
+                <h3 class="font-extrabold text-main text-lg mb-2">એક્સેલ માસ્ટર કોર્સ</h3>
+                <p class="text-xs text-muted mb-4">૭ પ્રેક્ટિકલ મોડ્યુલ્સ સાથે એક્સેલની ઊંડાણપૂર્વક તાલીમ.</p>
+                <div class="w-full bg-subtle rounded-full h-2.5 overflow-hidden mb-4">
+                  <div class="bg-accent h-full rounded-full transition-all" style="width: ${courseProgress}%"></div>
+                </div>
+              </div>
+              <button class="btn btn-secondary w-full py-2 text-xs font-bold" onclick="App.switchTab('course')">
+                ${isCourseFinished ? 'કોર્સ પુનરાવર્તન કરો ↗' : 'કોર્સ આગળ ધપાવો ↗'}
+              </button>
+            </div>
+
+            <!-- Exam & Certificate Card -->
+            <div class="bg-card border border-border rounded-xl p-5 shadow-sm flex flex-col justify-between">
+              <div>
+                <div class="flex items-center justify-between mb-3">
+                  <span class="text-xs font-bold uppercase tracking-wider text-muted">સર્ટિફિકેશન સ્થિતિ</span>
+                  <span class="px-2 py-0.5 rounded text-xs font-bold ${examPassed ? 'bg-green-500/10 text-green-600' : 'bg-subtle text-muted'}">
+                    ${examPassed ? 'પાસ કરેલ ✓' : 'બાકી છે'}
+                  </span>
+                </div>
+                <h3 class="font-extrabold text-main text-lg mb-2">લાઈવ પરીક્ષા & સર્ટિફિકેટ</h3>
+                <p class="text-xs text-muted mb-4">
+                  ${examPassed ? `તમે ૫૦ પ્રશ્નોની પરીક્ષા પાસ કરી લીધી છે! તમારો સત્તાવાર ગોલ્ડ-સીલ સર્ટિફિકેટ તૈયાર છે.` : `૫૦ પ્રશ્નોની લાઈવ પરીક્ષા આપીને ૭૦%+ માર્ક્સ સાથે ગોલ્ડ-સીલ સર્ટિફિકેટ અનલોક કરો.`}
+                </p>
+              </div>
+              ${examPassed ? `
+                <button class="btn btn-primary w-full py-2 text-xs font-bold" onclick="App.switchTab('certificate')">
+                  🎓 મારું સર્ટિફિકેટ ડાઉનલોડ કરો ↗
+                </button>
+              ` : `
+                <button class="btn btn-primary w-full py-2 text-xs font-bold" onclick="App.switchTab('exam')">
+                  ⏱️ લાઈવ પરીક્ષા શરૂ કરો ↗
+                </button>
+              `}
+            </div>
+          </div>
+
+          <!-- Firebase Cloud Sync Card -->
+          <div class="bg-card-subtle border border-border rounded-xl p-5 text-xs text-muted flex flex-col sm:flex-row items-center justify-between gap-3">
+            <div class="flex items-center gap-3">
+              <span class="text-2xl">🔥</span>
+              <div>
+                <div class="font-bold text-main">Google Firebase પ્રોજેક્ટ: <span class="font-mono text-accent">excel-master-pro-4c1a1</span></div>
+                <div>તમારો તમામ ડેટા સુરક્ષિત રીતે ગૂગલ ફાયરબેસ ક્લાઉડ સાથે જોડાયેલો છે.</div>
+              </div>
+            </div>
+            <button class="btn btn-secondary btn-sm font-semibold shrink-0" onclick="FirebaseAuthManager.openConfigModal()">
+              ⚙️ Firebase સેટિંગ્સ
+            </button>
+          </div>
+        </div>
+      `;
+      return;
+    }
+
+    // Guest / Not Logged In View: Full Login & Signup Page
+    const isSignUp = mode === 'signup';
+
+    container.innerHTML = `
+      <div class="auth-page-wrapper max-w-xl mx-auto py-8 px-4">
+        <!-- Brand Header -->
+        <div class="text-center mb-8">
+          <div class="w-16 h-16 rounded-2xl bg-accent/10 text-accent flex items-center justify-center text-3xl mx-auto mb-3 shadow-inner">
+            🔐
+          </div>
+          <h2 class="text-2xl md:text-3xl font-black text-main tracking-tight">
+            ${isSignUp ? 'નવું એકાઉન્ટ બનાવો (Sign Up)' : 'એક્સેલ માસ્ટરમાં સાઇન ઇન કરો (Sign In)'}
+          </h2>
+          <p class="text-xs md:text-sm text-muted mt-1 max-w-md mx-auto">
+            કોર્સ પ્રગતિ, ક્વિઝ સ્કોર, લાઈવ પરીક્ષા પરિણામ અને ગોલ્ડ-સીલ સર્ટિફિકેટ તમારા નામ સાથે સેવ રાખવા માટે લૉગિન કરો.
+          </p>
+          <div class="mt-2 text-[11px] font-mono inline-block px-3 py-1 rounded-full bg-accent/10 text-accent font-semibold border border-accent/20">
+            🔥 Firebase Project: excel-master-pro-4c1a1
+          </div>
+        </div>
+
+        <!-- Auth Card -->
+        <div class="bg-card border border-border rounded-2xl p-6 md:p-8 shadow-xl">
+          <!-- Mode Tabs (Sign In / Sign Up) -->
+          <div class="flex border-b border-border mb-6">
+            <button class="flex-1 py-3 text-center text-sm font-extrabold transition-all border-b-2 ${!isSignUp ? 'border-accent text-accent' : 'border-transparent text-muted hover:text-main'}"
+                    onclick="FirebaseAuthManager.activeMode='signin'; App.render();">
+              🔑 સાઇન ઇન (Sign In)
+            </button>
+            <button class="flex-1 py-3 text-center text-sm font-extrabold transition-all border-b-2 ${isSignUp ? 'border-accent text-accent' : 'border-transparent text-muted hover:text-main'}"
+                    onclick="FirebaseAuthManager.activeMode='signup'; App.render();">
+              📝 નવું એકાઉન્ટ (Sign Up)
+            </button>
+          </div>
+
+          <!-- Google 1-Click Sign-In (Recommended) -->
+          <div class="mb-5">
+            <button class="btn-google-auth w-full py-3.5 px-4 rounded-xl border-2 border-border bg-page hover:bg-card-subtle flex items-center justify-center gap-3 font-extrabold text-sm transition-all shadow-sm hover:border-accent hover:shadow-md cursor-pointer"
+                    onclick="FirebaseAuthManager.signInWithGoogle()">
+              <svg class="w-5 h-5" viewBox="0 0 24 24">
+                <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
+                <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
+              </svg>
+              <span>Google વડે 1-ક્લિકમાં સાઇન ઇન કરો</span>
+            </button>
+            <p class="text-[11px] text-center text-muted mt-1.5">કોઈ પાસવર્ડ યાદ રાખવાની જરૂર નથી • સુરક્ષિત ગૂગલ વેરિફિકેશન</p>
+          </div>
+
+          <div class="flex items-center gap-3 my-5">
+            <div class="h-px bg-border flex-1"></div>
+            <span class="text-xs uppercase font-bold text-muted">અથવા ઈમેલ વડે</span>
+            <div class="h-px bg-border flex-1"></div>
+          </div>
+
+          <!-- Email & Password Form -->
+          <form onsubmit="event.preventDefault(); App.handleAuthPageSubmit();" class="space-y-4">
+            ${isSignUp ? `
+              <div>
+                <label class="block text-xs font-bold text-muted mb-1.5">પૂરું નામ (Full Name) <span class="text-red-500">*</span></label>
+                <input type="text" id="pageAuthDisplayName" class="form-control w-full p-3 rounded-xl border border-border bg-page text-main text-sm"
+                       placeholder="દા.ત. રમેશભાઈ પટેલ" required />
+                <span class="text-[11px] text-muted">આ નામ તમારા સત્તાવાર સર્ટિફિકેટમાં પ્રિન્ટ થશે.</span>
+              </div>
+            ` : ''}
+
+            <div>
+              <label class="block text-xs font-bold text-muted mb-1.5">ઈમેલ એડ્રેસ (Email Address) <span class="text-red-500">*</span></label>
+              <input type="email" id="pageAuthEmail" class="form-control w-full p-3 rounded-xl border border-border bg-page text-main text-sm"
+                     placeholder="yourname@gmail.com" required />
+            </div>
+
+            <div>
+              <label class="block text-xs font-bold text-muted mb-1.5">પાસવર્ડ (Password) <span class="text-red-500">*</span></label>
+              <div class="relative">
+                <input type="password" id="pageAuthPassword" class="form-control w-full p-3 pr-10 rounded-xl border border-border bg-page text-main text-sm"
+                       placeholder="ઓછામાં ઓછા ૬ અક્ષર..." minlength="6" required />
+                <button type="button" class="absolute right-3 top-3 text-muted hover:text-main text-sm cursor-pointer"
+                        onclick="const p = document.getElementById('pageAuthPassword'); p.type = p.type === 'password' ? 'text' : 'password';">
+                  👁️
+                </button>
+              </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary w-full py-3.5 rounded-xl font-extrabold text-sm shadow-md mt-2">
+              ${isSignUp ? '📝 નવું ખાતું બનાવો (Create Account)' : '🚀 સાઇન ઇન કરો (Sign In)'}
+            </button>
+          </form>
+
+          <!-- Toggle Link -->
+          <div class="text-center text-xs text-muted mt-5 pt-4 border-t border-border">
+            ${isSignUp ? `
+              <span>પહેલેથી ખાતું છે?</span>
+              <button class="text-accent font-bold underline ml-1 cursor-pointer" onclick="FirebaseAuthManager.activeMode='signin'; App.render();">
+                સાઇન ઇન કરો
+              </button>
+            ` : `
+              <span>નવા યુઝર છો?</span>
+              <button class="text-accent font-bold underline ml-1 cursor-pointer" onclick="FirebaseAuthManager.activeMode='signup'; App.render();">
+                મફતમાં નવું ખાતું બનાવો
+              </button>
+            `}
+          </div>
+
+          <!-- Instant Demo / Guest Login -->
+          <div class="mt-4 pt-3 border-t border-border flex items-center justify-between text-xs">
+            <span class="text-muted">ઝડપી ટેસ્ટિંગ લૉગિન:</span>
+            <button class="text-accent hover:underline font-bold cursor-pointer" onclick="FirebaseAuthManager.signInAsDemoUser(); App.render();">
+              ⚡ ગેસ્ટ ડેમો તરીકે લૉગિન
+            </button>
+          </div>
+        </div>
+
+        <!-- Security Badge -->
+        <div class="text-center text-xs text-muted mt-6 flex items-center justify-center gap-2">
+          <span>🔒 256-bit SSL</span> •
+          <span>Google Firebase Auth</span> •
+          <button class="text-accent underline font-semibold cursor-pointer" onclick="FirebaseAuthManager.openConfigModal()">
+            Firebase Settings
+          </button>
+        </div>
+      </div>
+    `;
+  },
+
+  handleAuthPageSubmit() {
+    const email = document.getElementById('pageAuthEmail')?.value?.trim();
+    const password = document.getElementById('pageAuthPassword')?.value;
+    const displayName = document.getElementById('pageAuthDisplayName')?.value?.trim();
+
+    if (!email || !password) return;
+
+    if (!FirebaseAuthManager.auth) {
+      FirebaseAuthManager.setupFirebase();
+    }
+
+    if (!FirebaseAuthManager.auth) {
+      this.showToast("Firebase સેવા શરૂ થઈ શકી નથી.");
+      return;
+    }
+
+    if (FirebaseAuthManager.activeMode === 'signup') {
+      FirebaseAuthManager.auth.createUserWithEmailAndPassword(email, password)
+        .then(async (userCred) => {
+          if (displayName && userCred.user) {
+            await userCred.user.updateProfile({ displayName: displayName });
+          }
+          App.showToast("નવું ખાતું સફળતાપૂર્વક બની ગયું!");
+          App.render();
+        })
+        .catch(err => {
+          FirebaseAuthManager.handleAuthError(err);
+        });
+    } else {
+      FirebaseAuthManager.auth.signInWithEmailAndPassword(email, password)
+        .then(() => {
+          App.showToast("સફળતાપૂર્વક સાઇન ઇન થઈ ગયું!");
+          App.render();
+        })
+        .catch(err => {
+          FirebaseAuthManager.handleAuthError(err);
+        });
+    }
   },
 
   escapeHtml(str) {

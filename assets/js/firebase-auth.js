@@ -102,6 +102,9 @@ const FirebaseAuthManager = {
           localStorage.removeItem('excel_master_user_profile');
         }
         this.renderHeaderAuthButton();
+        if (typeof App !== 'undefined' && App.activeTab === 'auth') {
+          App.render();
+        }
       });
 
       // Handle redirect results for mobile/PWA
@@ -144,7 +147,7 @@ const FirebaseAuthManager = {
       `;
     } else {
       container.innerHTML = `
-        <button id="authModalBtn" class="btn btn-secondary btn-sm flex items-center gap-1.5 font-bold" onclick="FirebaseAuthManager.openAuthModal()">
+        <button id="authModalBtn" class="btn btn-secondary btn-sm flex items-center gap-1.5 font-bold" onclick="App.switchTab('auth')">
           <span>👤</span>
           <span data-i18n="signInBtn">${typeof I18N !== 'undefined' ? I18N.t('signInBtn') : 'સાઇન ઇન'}</span>
         </button>
@@ -503,6 +506,9 @@ const FirebaseAuthManager = {
     }
     this.renderHeaderAuthButton();
     this.closeAuthModal();
+    if (typeof App !== 'undefined') {
+      App.render();
+    }
 
     // Auto update certificate name
     const certInput = document.getElementById('certCandidateName');
@@ -518,6 +524,7 @@ const FirebaseAuthManager = {
     localStorage.removeItem('excel_master_user_profile');
     if (typeof App !== 'undefined') {
       App.showToast("સફળતાપૂર્વક લોગ આઉટ થયા.");
+      App.render();
     }
     this.renderHeaderAuthButton();
     this.closeProfileMenu();

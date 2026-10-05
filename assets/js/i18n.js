@@ -25,6 +25,7 @@ const I18N = {
       tabShortcutGame: "Shortcut Trainer 🎮",
       tabPracticeSheets: "Practice Workbooks 📥",
       tabCertificate: "Certificate 🎓",
+      tabAuth: "Login / Profile 👤",
       tabFavorites: "Favorites",
       tabCheatSheet: "Cheat Sheet",
 
@@ -203,6 +204,7 @@ const I18N = {
       tabShortcutGame: "શોર્ટકટ ગેમ 🎮",
       tabPracticeSheets: "પ્રેક્ટિસ શીટ્સ 📥",
       tabCertificate: "સર્ટિફિકેટ 🎓",
+      tabAuth: "લૉગિન / પ્રોફાઇલ 👤",
       tabFavorites: "મનપસંદ (સેવ કરેલ)",
       tabCheatSheet: "ચીટ શીટ",
 
@@ -381,6 +383,7 @@ const I18N = {
       tabShortcutGame: "शॉर्टकट ट्रेनर 🎮",
       tabPracticeSheets: "प्रैक्टिस शीट्स 📥",
       tabCertificate: "सर्टिफिकेट 🎓",
+      tabAuth: "लॉगिन / प्रोफाइल 👤",
       tabFavorites: "पसंदीदा (सेव किए गए)",
       tabCheatSheet: "चीट शीट",
 
